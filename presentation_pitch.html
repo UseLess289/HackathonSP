@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pitch — Assistant d'Accessibilité Universelle Linux</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .stat-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white overflow-hidden">
+
+  <!-- Header / Navigation & Pitch Timer -->
+  <header class="w-full px-8 py-5 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/80 backdrop-blur z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-sky-500 to-emerald-400 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-500/20">
+        A
+      </div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+          OpenAssist Linux
+          <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Hackathon 2026</span>
+        </h1>
+        <p class="text-xs text-slate-400">Pitch 3 Minutes — Accessibilité & Souveraineté</p>
+      </div>
+    </div>
+
+    <!-- Live Timer & Slide Controls -->
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
+        <span class="text-slate-400 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-indigo-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Chrono Pitch :
+        </span>
+        <span id="pitchTimer" class="font-mono font-bold text-amber-400 text-sm">03:00</span>
+        <button id="timerToggle" class="text-[10px] text-slate-400 hover:text-white ml-1 px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition">Start</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="prevBtn" class="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition" title="Slide précédente (Flèche gauche)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <span class="text-xs font-mono text-slate-400 min-w-[50px] text-center">
+          <span id="currentSlideNum" class="text-white font-bold">1</span> / <span id="totalSlides">7</span>
+        </span>
+        <button id="nextBtn" class="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition" title="Slide suivante (Flèche droite / Espace)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slide Canvas -->
+  <main class="flex-1 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-center relative">
+
+    <!-- SLIDE 1 : Titre & Accroche -->
+    <section class="slide active flex-col justify-center items-center text-center w-full max-w-4xl space-y-8" data-step="0:30">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium">
+        <span>🇫🇷 Migration Linux & Souveraineté Numérique</span>
+      </div>
+
+      <h2 class="text-5xl sm:text-6xl font-extrabold tracking-tight leading-tight">
+        L'Accessibilité Universelle <br>
+        <span class="gradient-text">Sans Concession de Souveraineté</span>
+      </h2>
+
+      <p class="text-lg sm:text-xl text-slate-300 max-w-2xl leading-relaxed">
+        Le compagnon Linux open-source qui automatise les démarches administratives et bureautiques pour les personnes en situation de handicap et les exclus du numérique.
+      </p>
+
+      <div class="grid grid-cols-3 gap-4 w-full pt-4 max-w-3xl">
+        <div class="stat-card p-4 rounded-xl text-center">
+          <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Architecture</div>
+          <div class="text-lg font-bold text-white">100% Locale / ZDR</div>
+          <div class="text-[11px] text-slate-500">Zéro rétention de données</div>
+        </div>
+        <div class="stat-card p-4 rounded-xl text-center">
+          <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Compatibilité</div>
+          <div class="text-lg font-bold text-sky-400">PC à 100 €</div>
+          <div class="text-[11px] text-slate-500">Matériel reconditionné</div>
+        </div>
+        <div class="stat-card p-4 rounded-xl text-center">
+          <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Vitesse Démo</div>
+          <div class="text-lg font-bold text-emerald-400">&lt; 90 secondes</div>
+          <div class="text-[11px] text-slate-500">Du micro à l'envoi validé</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2 : Le Constat & La Fracture Numérique -->
+    <section class="slide flex-col justify-center w-full max-w-4xl space-y-6" data-step="1:00">
+      <div class="text-xs uppercase tracking-wider font-semibold text-rose-400">Le Constat</div>
+      <h2 class="text-4xl font-extrabold text-white leading-snug">
+        La migration vers Linux ne peut pas laisser <span class="text-rose-400">un quart des citoyens</span> au bord de la route.
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-2">
+        <div class="stat-card p-6 rounded-2xl border-rose-500/20 bg-rose-500/5">
+          <div class="text-4xl sm:text-5xl font-black text-rose-400 font-mono mb-2">12 M</div>
+          <div class="text-base font-bold text-white mb-1">Français handicapés</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            1 Français sur 5 touché par un handicap moteur, visuel, cognitif ou auditif, confronté à des interfaces austères.
+          </p>
+        </div>
+
+        <div class="stat-card p-6 rounded-2xl border-amber-500/20 bg-amber-500/5">
+          <div class="text-4xl sm:text-5xl font-black text-amber-400 font-mono mb-2">13 M</div>
+          <div class="text-base font-bold text-white mb-1">En illectronisme</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Perdus face au jargon administratif, incapables de remplir un formulaire ou d'attacher un justificatif sans aide humaine.
+          </p>
+        </div>
+
+        <div class="stat-card p-6 rounded-2xl border-indigo-500/20 bg-indigo-500/5">
+          <div class="text-4xl sm:text-5xl font-black text-indigo-400 font-mono mb-2">100 %</div>
+          <div class="text-base font-bold text-white mb-1">Démarches en ligne</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            La dématérialisation totale est devenue une barrière infranchissable si l'interface n'est pas radicalement simplifiée.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3 : Le Grand Paradoxe Windows vs Linux -->
+    <section class="slide flex-col justify-center w-full max-w-4xl space-y-6" data-step="1:30">
+      <div class="text-xs uppercase tracking-wider font-semibold text-sky-400">La Double Inclusion</div>
+      <h2 class="text-4xl font-extrabold text-white leading-snug">
+        L'IA d'accessibilité ne doit pas être un <span class="text-sky-400">luxe matériel</span>.
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+        <!-- Windows Box -->
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-slate-300">Modèle Windows (Copilot+ PC)</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-mono">1 200 € min.</span>
+          </div>
+          <ul class="space-y-3 text-xs text-slate-400">
+            <li class="flex items-start gap-2">
+              <span class="text-rose-400 font-bold">✕</span> Exige un processeur avec NPU dédié hors de prix
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-rose-400 font-bold">✕</span> Télémétrie agressive et surveillance (type Recall)
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-rose-400 font-bold">✕</span> Sandbox fermée : incapable de manipuler librement les fichiers locaux
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux Box -->
+        <div class="p-6 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 space-y-4 relative overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-white">Notre Solution (Linux Accessible)</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">PC à 100 €</span>
+          </div>
+          <ul class="space-y-3 text-xs text-slate-300">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-bold">✓</span> Tourne sur PC reconditionné (associations, Emmaüs, mairies)
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-bold">✓</span> <strong>ZDR Absolu</strong> : Données de santé & fiscales protégées en local
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-bold">✓</span> Pont transparent entre OS, fichiers PDF locaux et formulaires
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4 : La Solution & Les Profils Adaptatifs -->
+    <section class="slide flex-col justify-center w-full max-w-4xl space-y-6" data-step="2:00">
+      <div class="text-xs uppercase tracking-wider font-semibold text-indigo-400">La Solution</div>
+      <h2 class="text-4xl font-extrabold text-white leading-snug">
+        Une couche d'intelligence adaptée à chaque capacité.
+      </h2>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+        <!-- Profil 1 -->
+        <div class="stat-card p-5 rounded-xl border-sky-500/20">
+          <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold mb-3">🗣️</div>
+          <h3 class="font-bold text-sm text-white mb-1">Moteur</h3>
+          <p class="text-xs text-slate-400">Automatisation totale à la voix, zéro manipulation souris/clavier requise.</p>
+        </div>
+
+        <!-- Profil 2 -->
+        <div class="stat-card p-5 rounded-xl border-amber-500/20">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold mb-3">🧠</div>
+          <h3 class="font-bold text-sm text-white mb-1">Cognitif / FALC</h3>
+          <p class="text-xs text-slate-400">1 seule question à la fois, mots simples, vulgarisation du jargon administratif.</p>
+        </div>
+
+        <!-- Profil 3 -->
+        <div class="stat-card p-5 rounded-xl border-emerald-500/20">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold mb-3">👁️</div>
+          <h3 class="font-bold text-sm text-white mb-1">Visuel</h3>
+          <p class="text-xs text-slate-400">Très grand texte, contraste élevé, navigation clavier intégrale, lecture audio.</p>
+        </div>
+
+        <!-- Profil 4 -->
+        <div class="stat-card p-5 rounded-xl border-purple-500/20">
+          <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold mb-3">👂</div>
+          <h3 class="font-bold text-sm text-white mb-1">Auditif</h3>
+          <p class="text-xs text-slate-400">Retranscription textuelle fidèle, alertes visuelles claires et pas-à-pas.</p>
+        </div>
+      </div>
+
+      <!-- Killer Feature Box -->
+      <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-4">
+        <div class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-400 text-xs font-mono font-bold uppercase tracking-wider shrink-0">Killer Feature</div>
+        <div class="text-xs text-slate-300">
+          <strong>Assistant de pièces justificatives locales :</strong> Scan du dossier local (<code class="text-indigo-300">~/Papiers/</code>), extraction de l'adresse et des identifiants (CNI, Sécu), remplissage du formulaire et téléversement automatique des pièces.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5 : Démo Live & Scénario 90s -->
+    <section class="slide flex-col justify-center w-full max-w-4xl space-y-6" data-step="2:30">
+      <div class="text-xs uppercase tracking-wider font-semibold text-emerald-400">Le Parcours de Démo</div>
+      <h2 class="text-4xl font-extrabold text-white leading-snug">
+        En direct : Remplir et expédier un dossier en <span class="text-emerald-400">90 secondes</span>.
+      </h2>
+
+      <!-- Workflow Pipeline -->
+      <div class="grid grid-cols-5 gap-2 pt-2">
+        <div class="stat-card p-3 rounded-lg text-center space-y-1">
+          <div class="text-lg">🎙️</div>
+          <div class="text-xs font-bold text-white">1. Ordre vocal</div>
+          <div class="text-[10px] text-slate-400">« Remplis avec ma CNI et mon EDF »</div>
+        </div>
+        <div class="stat-card p-3 rounded-lg text-center space-y-1">
+          <div class="text-lg">📄</div>
+          <div class="text-xs font-bold text-sky-400">2. Scan local</div>
+          <div class="text-[10px] text-slate-400">Extraction texte ZDR sur la machine</div>
+        </div>
+        <div class="stat-card p-3 rounded-lg text-center space-y-1">
+          <div class="text-lg">📊</div>
+          <div class="text-xs font-bold text-indigo-400">3. Formulaire ODS</div>
+          <div class="text-[10px] text-slate-400">Remplissage déterministe LibreOffice</div>
+        </div>
+        <div class="stat-card p-3 rounded-lg text-center space-y-1 border-amber-500/40 bg-amber-500/5">
+          <div class="text-lg">🛡️</div>
+          <div class="text-xs font-bold text-amber-400">4. Confirmation</div>
+          <div class="text-[10px] text-slate-300">Accord explicite avant envoi</div>
+        </div>
+        <div class="stat-card p-3 rounded-lg text-center space-y-1 border-emerald-500/40 bg-emerald-500/5">
+          <div class="text-lg">📨</div>
+          <div class="text-xs font-bold text-emerald-400">5. Envoi Mailpit</div>
+          <div class="text-[10px] text-slate-300">Message & PJ reçus instantanément</div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+        <span class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <strong>Garde-fou inviolable :</strong> Aucune transmission ni envoi d'email sans confirmation humaine explicite (clavier ou voix).
+        </span>
+        <span class="font-mono text-slate-500">100% Mock & Documents Fictifs</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 6 : L'Architecture Technique -->
+    <section class="slide flex-col justify-center w-full max-w-4xl space-y-6" data-step="2:45">
+      <div class="text-xs uppercase tracking-wider font-semibold text-purple-400">Architecture</div>
+      <h2 class="text-4xl font-extrabold text-white leading-snug">
+        Légère, modulaire, pensée pour la souveraineté.
+      </h2>
+
+      <div class="grid grid-cols-3 gap-5 pt-2">
+        <div class="stat-card p-5 rounded-xl space-y-2">
+          <div class="text-xs font-bold text-sky-400 uppercase tracking-wider">Frontend Accessible</div>
+          <div class="text-sm font-semibold text-white">Interface Web Locale & ARIA</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            HTML5/CSS servi en local, Web Speech API (STT/TTS intégrés sans coût), gros contrastes, secours clavier à 100%.
+          </p>
+        </div>
+
+        <div class="stat-card p-5 rounded-xl space-y-2">
+          <div class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Cœur & Sécurité</div>
+          <div class="text-sm font-semibold text-white">Machine à États & Contrat JSON</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Validation stricte d'intention, liste blanche d'outils, séparation étanche entre données locales et requêtes IA.
+          </p>
+        </div>
+
+        <div class="stat-card p-5 rounded-xl space-y-2">
+          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Système Linux</div>
+          <div class="text-sm font-semibold text-white">GNOME Wayland & D-Bus</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Intégration `anthony-mcp`, manipulation de LibreOffice Calc (`.ods` via `odfpy`), extraction locale `pdftotext`.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7 : Conclusion & Appel à l'Action -->
+    <section class="slide flex-col justify-center items-center text-center w-full max-w-4xl space-y-8" data-step="3:00">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium">
+        <span>🚀 La Vision 2026</span>
+      </div>
+
+      <h2 class="text-5xl font-extrabold text-white tracking-tight leading-tight">
+        Faisons de Linux l'OS le plus <br>
+        <span class="gradient-text">Inclusif et Protecteur au Monde</span>
+      </h2>
+
+      <p class="text-lg text-slate-300 max-w-2xl leading-relaxed">
+        Offrir aux agents publics, aux élèves et aux citoyens en difficulté une autonomie complète, sans vendre leurs données privées aux GAFAM et sans les forcer à acheter du matériel hors de prix.
+      </p>
+
+      <div class="flex items-center justify-center gap-4 pt-2">
+        <div class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25">
+          Projet Open-Source (GPL-3.0)
+        </div>
+        <div class="px-6 py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-medium text-sm">
+          Place à la Démo Live (90s)
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer with Slide Progress Indicator & Speaker Notes Toggle -->
+  <footer class="w-full px-8 py-4 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur flex items-center justify-between z-20">
+    <div class="flex items-center gap-2" id="slideDots">
+      <!-- Dots inserted via JS -->
+    </div>
+
+    <!-- Speaker Cue -->
+    <div id="speakerCue" class="text-xs text-slate-400 font-medium flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+      <span id="cueText">Slide 1 — Présentez la vision et le défi de la migration Linux</span>
+    </div>
+
+    <div class="text-[11px] text-slate-500 flex items-center gap-3">
+      <span>Touches : <kbd class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">←</kbd> <kbd class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">→</kbd> <kbd class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">Espace</kbd></span>
+      <span>Plein écran : <kbd class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">F</kbd></span>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const currentSlideNum = document.getElementById('currentSlideNum');
+    const totalSlides = document.getElementById('totalSlides');
+    const slideDots = document.getElementById('slideDots');
+    const cueText = document.getElementById('cueText');
+    const pitchTimer = document.getElementById('pitchTimer');
+    const timerToggle = document.getElementById('timerToggle');
+
+    let currentIndex = 0;
+    totalSlides.textContent = slides.length;
+
+    const speakerCues = [
+      "Slide 1 (0:00 - 0:25) : Accroche forte : la migration Linux de l'État et le défi de l'inclusion.",
+      "Slide 2 (0:25 - 0:55) : Les chiffres chocs : 12M de handicapés, 13M en illectronisme.",
+      "Slide 3 (0:55 - 1:25) : Le contraste Windows (PC à 1200€) vs Linux (PC reconditionné à 100€ + ZDR).",
+      "Slide 4 (1:25 - 1:55) : La solution & les 4 profils adaptatifs (focus sur le FALC et pièces locales).",
+      "Slide 5 (1:55 - 2:30) : Présentation du scénario de démo en 5 étapes et du garde-fou obligatoire.",
+      "Slide 6 (2:30 - 2:45) : Architecture technique robuste : GNOME Wayland, ODS headless, Web accessible.",
+      "Slide 7 (2:45 - 3:00) : Conclusion percutante, ouverture vers la démo live et session de questions."
+    ];
+
+    // Generate Dots
+    slides.forEach((_, idx) => {
+      const dot = document.createElement('button');
+      dot.className = `w-2 h-2 rounded-full transition-all ${idx === 0 ? 'bg-indigo-500 w-6' : 'bg-slate-700 hover:bg-slate-600'}`;
+      dot.addEventListener('click', () => goToSlide(idx));
+      slideDots.appendChild(dot);
+    });
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentIndex);
+      });
+      currentSlideNum.textContent = currentIndex + 1;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === slides.length - 1;
+      cueText.textContent = speakerCues[currentIndex] || "";
+
+      // Update dots
+      const dots = slideDots.querySelectorAll('button');
+      dots.forEach((dot, idx) => {
+        if (idx === currentIndex) {
+          dot.className = 'w-6 h-2 rounded-full bg-indigo-500 transition-all';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-all';
+        }
+      });
+    }
+
+    function goToSlide(idx) {
+      if (idx >= 0 && idx < slides.length) {
+        currentIndex = idx;
+        updateSlide();
+      }
+    }
+
+    prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+    nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        goToSlide(currentIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        goToSlide(currentIndex - 1);
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // 3:00 Minutes Countdown Timer
+    let timeLeft = 180;
+    let timerInterval = null;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    timerToggle.addEventListener('click', () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerToggle.textContent = 'Reprendre';
+        pitchTimer.classList.remove('text-emerald-400');
+        pitchTimer.classList.add('text-amber-400');
+      } else {
+        timerToggle.textContent = 'Pause';
+        pitchTimer.classList.remove('text-amber-400');
+        pitchTimer.classList.add('text-emerald-400');
+        timerInterval = setInterval(() => {
+          if (timeLeft > 0) {
+            timeLeft--;
+            pitchTimer.textContent = formatTime(timeLeft);
+            if (timeLeft <= 30) {
+              pitchTimer.classList.remove('text-emerald-400', 'text-amber-400');
+              pitchTimer.classList.add('text-rose-500', 'animate-pulse');
+            }
+          } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            pitchTimer.textContent = "00:00 - Fin !";
+            timerToggle.textContent = 'Reset';
+          }
+        }, 1000);
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>
