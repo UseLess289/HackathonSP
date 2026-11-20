@@ -14,10 +14,11 @@ l'utilisateur via sa propre clé API (BYOK).
 ## Architecture
 
 ```
-Navigateur (UI React, 100% client, clé API jamais envoyée ailleurs que le fournisseur choisi)
-   │  HTTP/WebSocket vers localhost
+Navigateur (UI React, clé API stockée uniquement en localStorage)
+   │  HTTP vers 127.0.0.1 (clé envoyée uniquement au proxy local)
    ▼
-Serveur MCP local (Python, sur le poste de l'employé)
+Proxy LLM du serveur MCP local (Python, écoute UNIQUEMENT sur 127.0.0.1,
+  relaie vers le fournisseur d'IA choisi, ne logue ni ne stocke jamais la clé ni les prompts)
    │  D-Bus
    ▼
 Extension GNOME Shell (Wayland) : screenshots, fenêtres, clavier/souris, réglages accessibilité
@@ -26,8 +27,9 @@ Extension GNOME Shell (Wayland) : screenshots, fenêtres, clavier/souris, régla
 Applications cibles : LibreOffice, Firefox, Thunderbird...
 ```
 
-- **ZDR garanti** : la clé API reste dans le navigateur (stockée uniquement en `localStorage`),
-  aucun serveur tiers ne voit rien. La web app est servie en local.
+- **ZDR garanti** : la clé API ne quitte jamais la machine de l'employé. Elle transite uniquement
+  navigateur → proxy `127.0.0.1` → fournisseur d'IA choisi par l'utilisateur. Aucun serveur tiers
+  ne la voit, le proxy ne la journalise ni ne la stocke. La web app est servie en local.
 - **Cible desktop** : GNOME Wayland uniquement.
 - **Double mode d'interaction** (selon le handicap) :
   - malvoyant / amputé des bras → communication par la voix (Web Speech API : dictée + synthèse, gratuites, intégrées au navigateur) ;
@@ -39,15 +41,20 @@ Applications cibles : LibreOffice, Firefox, Thunderbird...
 - **Stack** : UI en React (Vite), serveur MCP local en Python.
 - **Licence** : GPL-3.0 (réutilisation du code GPL-3.0 d'anthony-mcp).
 
-## Appel au LLM depuis le navigateur (CORS)
+## Appel au LLM : proxy local obligatoire (choix retenu)
 
-Le navigateur bloque les appels directs vers la plupart des API (CORS). Deux options, toutes deux
-compatibles ZDR :
+Le navigateur bloque les appels directs vers la plupart des API (CORS). On retient donc
+**l'option 2 : un proxy LLM embarqué dans le serveur MCP local** :
 
-1. **Mistral** (recommandé pour la démo) : SDK JS autorisant les appels navigateur
-   (`dangerouslyAllowBrowser`). Fournisseur français, bon en français.
-2. **Tout autre provider** (OpenAI, Anthropic, Ollama local...) : mini-proxy dans le serveur MCP
-   Python local, écoutant uniquement sur `127.0.0.1`, qui relaie sans journaliser ni stocker la clé.
+- Le navigateur envoie la requête (prompt + clé API) à `http://127.0.0.1:<port>/llm`.
+- Le proxy relaie vers le fournisseur choisi par l'utilisateur (OpenAI, Anthropic, Mistral,
+  Ollama local `http://localhost:11434`, etc.) et renvoie la réponse au navigateur.
+- **Garanties ZDR du proxy** : écoute uniquement sur `127.0.0.1` (jamais sur le réseau),
+  aucune journalisation de la clé, des prompts ni des réponses, aucun stockage sur disque,
+  la clé est transmise uniquement au fournisseur d'IA choisi et n'est jamais conservée.
+- Avantage : un seul mécanisme qui marche avec **tous** les fournisseurs, y compris ceux qui
+  interdisent les appels navigateur. Pour la démo 17h : Mistral (français, bon en français) ou
+  Ollama local (100% hors ligne).
 
 ## Périmètre bureautique
 
@@ -56,13 +63,11 @@ Firefox, Thunderbird. Mini base de connaissances « équivalences Windows → Li
 
 ## Plan horaire (démo à 17h, il est ~15h)
 
-| Horaire | Jalons |
-|---|---|
-| 15h00 - 15h25 | Cloner anthony-mcp, installer l'extension GNOME + serveur MCP Python, vérifier `ping` et un screenshot via D-Bus |
-| 15h25 - 15h55 | Web app React servie en local : chat, écran de config de la clé API, connexion au MCP local |
-| 15h55 - 16h25 | Accessibilité : ARIA + navigation clavier, haut contraste / grands caractères, mode vocal (Web Speech API) |
-| 16h25 - 16h45 | Deux scénarios de démo + fiches « équivalences Windows → Linux » (Writer, Calc) |
-| 16h45 - 17h00 | Répétition de la démo, README (promesse ZDR, licence GPL-3.0) |
+- Cloner anthony-mcp, installer l'extension GNOME + serveur MCP Python, vérifier `ping` et un screenshot via D-Bus |
+- Web app React servie en local : chat, écran de config de la clé API, connexion au MCP local |
+- Accessibilité : ARIA + navigation clavier, haut contraste / grands caractères, mode vocal (Web Speech API) |
+- Deux scénarios de démo + fiches « équivalences Windows → Linux » (Writer, Calc) |
+- Répétition de la démo, README (promesse ZDR, licence GPL-3.0) |
 
 ## Scénarios de démo
 
