@@ -56,6 +56,114 @@ L'application doit :
 - backend `CloudAIBackend` fourni par l'adaptation d'Anthony ;
 - outils MCP Anthony uniquement pour les actions de bureau nécessaires.
 
+## DAG des dépendances des tickets
+
+```mermaid
+flowchart TD
+    %% Dépendances externes (Adaptation Anthony)
+    subgraph EXT["Prérequis Anthony (adaptation-anthony.md)"]
+        AN_006["AN-006 : LLM Cloud & Tool calling"]
+        AN_014["AN-014 : Moteur GNOME/MCP validé"]
+    end
+
+    %% Track UI & Profil Accessibilité
+    subgraph UI_TRACK["Axe 1 — UI & Accessibilité"]
+        DEMO_001["DEMO-001 : Squelette App Produit"]
+        DEMO_002["DEMO-002 : UI Accessible minimale (gros boutons/clavier)"]
+        DEMO_003["DEMO-003 : Profil simplifié (FALC / 1 question à la fois)"]
+    end
+
+    %% Track Données Locales
+    subgraph DATA_TRACK["Axe 2 — Documents & Données Locales (ZDR)"]
+        DEMO_004["DEMO-004 : Préparation docs fictifs (CNI, Vitale, EDF)"]
+        DEMO_005["DEMO-005 : Scan & extraction locale (pdftotext)"]
+        DEMO_006["DEMO-006 : Normalisation données JSON locales"]
+    end
+
+    %% Track Formulaire Bureautique ODS
+    subgraph ODS_TRACK["Axe 3 — Formulaire ODS"]
+        DEMO_007["DEMO-007 : Formulaire ODS de démo"]
+        DEMO_008["DEMO-008 : Remplissage déterministe ODS (odfpy)"]
+    end
+
+    %% Track Orchestration & Interaction
+    subgraph ORCH_TRACK["Axe 4 — Orchestration & Machine à États"]
+        DEMO_009["DEMO-009 : Gestion questions manquantes (voix/texte)"]
+        DEMO_010["DEMO-010 : Machine à états du workflow"]
+        DEMO_011["DEMO-011 : Contrat JSON & validation plan IA"]
+    end
+
+    %% Track Sécurité, Envoi & Boîte de test
+    subgraph EMAIL_TRACK["Axe 5 — Préparation Email & Sécurité"]
+        DEMO_012["DEMO-012 : Préparation Email (ODS + PJ)"]
+        DEMO_013["DEMO-013 : Confirmation humaine obligatoire (Garde-fou)"]
+        DEMO_014["DEMO-014 : Boîte email de test (Mailpit)"]
+    end
+
+    %% Track Robustesse & Transparence
+    subgraph ROBUST_TRACK["Axe 6 — Transparence & Secours"]
+        DEMO_015["DEMO-015 : Indicateurs de confidentialité (Local vs Cloud)"]
+        DEMO_016["DEMO-016 : Gestion erreurs & mode secours clavier"]
+    end
+
+    %% Track Présentation & Validation finale
+    subgraph VALIDATION_TRACK["Axe 7 — Répétition & Démo"]
+        DEMO_017["DEMO-017 : Scénario démo 90 secondes"]
+        DEMO_018["DEMO-018 : Répétitions & Tests complets (x3)"]
+    end
+
+    %% Liaisons externes
+    AN_014 --> DEMO_001
+    AN_006 --> DEMO_011
+
+    %% Liaisons internes Axe 1
+    DEMO_001 --> DEMO_002
+    DEMO_002 --> DEMO_003
+
+    %% Liaisons internes Axe 2
+    DEMO_004 --> DEMO_005
+    DEMO_005 --> DEMO_006
+
+    %% Liaisons Axe 3 (ODS)
+    DEMO_006 --> DEMO_008
+    DEMO_007 --> DEMO_008
+
+    %% Liaisons Axe 4 (Orchestration)
+    DEMO_003 --> DEMO_009
+    DEMO_006 --> DEMO_009
+    DEMO_001 --> DEMO_010
+    DEMO_005 --> DEMO_010
+    DEMO_009 --> DEMO_010
+    DEMO_010 --> DEMO_011
+
+    %% Liaisons Axe 5 (Email)
+    DEMO_008 --> DEMO_012
+    DEMO_010 --> DEMO_012
+    DEMO_012 --> DEMO_013
+    DEMO_012 --> DEMO_014
+
+    %% Liaisons Axe 6 (Transparence & Robustesse)
+    DEMO_002 --> DEMO_015
+    DEMO_005 --> DEMO_015
+    DEMO_002 --> DEMO_016
+    DEMO_010 --> DEMO_016
+
+    %% Liaisons Axe 7 (Validation finale)
+    DEMO_013 --> DEMO_017
+    DEMO_014 --> DEMO_017
+    DEMO_016 --> DEMO_017
+    DEMO_017 --> DEMO_018
+
+    %% Style des nœuds bloquants
+    classDef blocking fill:#ffefef,stroke:#d9534f,stroke-width:2px,color:#900;
+    classDef high fill:#fdf8e2,stroke:#f0ad4e,stroke-width:2px,color:#8a6d3b;
+    classDef ext fill:#e8f4fd,stroke:#337ab7,stroke-width:1px,stroke-dasharray: 5 5,color:#245269;
+
+    class AN_006,AN_014 ext;
+    class DEMO_001,DEMO_002,DEMO_003,DEMO_004,DEMO_005,DEMO_007,DEMO_008,DEMO_009,DEMO_010,DEMO_011,DEMO_013,DEMO_018 blocking;
+    class DEMO_006,DEMO_012,DEMO_014,DEMO_015,DEMO_016,DEMO_017 high;
+```
+
 ## Tickets
 
 ### DEMO-001 — Créer le squelette de l'application produit
