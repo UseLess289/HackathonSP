@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "chrome-devtools": {
+        "type": "local",
+        "command": ["bash", ".opencode/bin/chrome-devtools-mcp.sh"]
+      }
+    }
+  }
+}
