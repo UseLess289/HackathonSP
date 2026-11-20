@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+*.eml
+*.egg-info/
+
+# Generated demo data (fictitious but generated locally — never commit)
+demo_data/documents/
+demo_data/mailbox/
+demo_data/formulaire_rempli.ods
+demo_data/formulaire_demo.ods

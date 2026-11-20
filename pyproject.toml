@@ -1,0 +1,24 @@
+[project]
+name = "assistant-accessibilite"
+version = "0.1.0"
+description = "Accessible Linux office companion — hackathon demo: fill an ODS form from local documents and send it by email (all local, human confirmation required)."
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-only" }
+dependencies = [
+    "odfpy>=1.4",
+    "reportlab>=4.0",
+    "aiosmtpd>=1.4",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[project.scripts]
+assistant = "assistant.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["assistant"]

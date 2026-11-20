@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistant d'accessibilité — démo</title>
+<style>
+  /* High-contrast accessible theme (DEMO-002): visible focus, big targets. */
+  :root {
+    --bg: #000; --fg: #fff; --accent: #ffd800; --ok: #00c853; --bad: #ff5252;
+    --panel: #111; --focus: #00b0ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: "DejaVu Sans", Verdana, sans-serif;
+    font-size: 22px; line-height: 1.5;
+  }
+  header { padding: 1rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+  h1 { font-size: 1.4rem; margin: 0; flex: 1; }
+  .badge {
+    border: 3px solid var(--accent); border-radius: 8px; padding: .3rem .8rem;
+    font-weight: bold; font-size: 1rem;
+  }
+  .badge.local { border-color: var(--ok); color: var(--ok); }
+  .badge.cloud { border-color: var(--accent); color: var(--accent); }
+  #state {
+    border: 3px solid var(--fg); border-radius: 8px; padding: .3rem .8rem;
+    font-weight: bold;
+  }
+  main { padding: 0 1rem 1rem; max-width: 60rem; }
+  #transcript {
+    background: var(--panel); border: 3px solid var(--fg); border-radius: 12px;
+    min-height: 10rem; max-height: 40vh; overflow-y: auto; padding: 1rem;
+    font-size: 1.3rem; white-space: pre-wrap;
+  }
+  #transcript .user { color: var(--accent); }
+  #transcript .assistant { color: var(--fg); }
+  form { display: flex; gap: .5rem; margin-top: 1rem; flex-wrap: wrap; }
+  input[type=text] {
+    flex: 1; min-width: 16rem; font-size: 1.3rem; padding: .8rem;
+    background: #000; color: #fff; border: 3px solid #fff; border-radius: 8px;
+  }
+  button {
+    font-size: 1.3rem; font-weight: bold; padding: .9rem 1.4rem; cursor: pointer;
+    border: 3px solid #fff; border-radius: 12px; background: #222; color: #fff;
+  }
+  button#talk { background: var(--accent); color: #000; border-color: var(--accent); }
+  button#talk.listening { background: var(--bad); color: #fff; }
+  button.confirm { background: var(--ok); color: #000; border-color: var(--ok); }
+  button.cancel { background: var(--bad); color: #fff; border-color: var(--bad); }
+  button:focus-visible, input:focus-visible {
+    outline: 5px solid var(--focus); outline-offset: 3px;
+  }
+  #zdr { margin-top: 1rem; font-size: 1rem; color: #ccc; }
+  .big { font-size: 1.6rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Assistant d'accessibilité (démo locale)</h1>
+  <span id="state" role="status" aria-live="polite">En attente</span>
+  <span id="badge" class="badge" aria-live="polite">🔒 Traitement 100 % local</span>
+</header>
+<main>
+  <div id="transcript" aria-live="polite" aria-label="Transcription et réponses de l'assistant"></div>
+  <form id="chat" autocomplete="off">
+    <label for="msg" class="big" style="display:none">Votre message</label>
+    <input id="msg" type="text" placeholder="Écrivez ici (repondre, oui, non, annuler, recommencer, aide…)" autofocus>
+    <button type="submit" id="send">Envoyer</button>
+    <button type="button" id="talk" aria-pressed="false">🎤 Parler</button>
+    <button type="button" class="confirm" data-cmd="oui">✔ Confirmer</button>
+    <button type="button" class="cancel" data-cmd="annuler">✖ Annuler</button>
+    <button type="button" data-cmd="recommencer">↺ Réessayer</button>
+  </form>
+  <p id="zdr">Aucune donnée personnelle ne quitte cet ordinateur (ZDR). L'email n'est envoyé qu'après votre confirmation explicite, vers une boîte de test locale.</p>
+</main>
+<script>
+"use strict";
+const transcript = document.getElementById("transcript");
+const stateEl = document.getElementById("state");
+const badgeEl = document.getElementById("badge");
+const form = document.getElementById("chat");
+const input = document.getElementById("msg");
+const talkBtn = document.getElementById("talk");
+
+function addLine(cls, text) {
+  const div = document.createElement("div");
+  div.className = cls;
+  div.textContent = text;
+  transcript.appendChild(div);
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
+async function send(text) {
+  if (!text.trim()) return;
+  addLine("user", "Vous > " + text);
+  input.value = "";
+  try {
+    const resp = await fetch("/api/turn", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text}),
+    });
+    const data = await resp.json();
+    addLine("assistant", "Assistant > " + data.reply);
+    stateEl.textContent = data.state_label;
+    if (data.privacy === "local") {
+      badgeEl.textContent = "🔒 Traitement 100 % local";
+      badgeEl.className = "badge local";
+    } else if (data.privacy === "cloud") {
+      badgeEl.textContent = "☁️ Échange chiffré avec le modèle IA";
+      badgeEl.className = "badge cloud";
+    } else {
+      badgeEl.textContent = "Assistant local";
+      badgeEl.className = "badge";
+    }
+  } catch (e) {
+    addLine("assistant", "Assistant > Connexion au serveur local perdue. Relancez l'application.");
+  }
+}
+
+form.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  send(input.value);
+});
+document.querySelectorAll("button[data-cmd]").forEach((b) => {
+  b.addEventListener("click", () => send(b.dataset.cmd));
+});
+
+// Voice input is OPTIONAL (DEMO-002): Web Speech API push-to-talk.
+// Everything works without it via the text field and buttons.
+let recognition = null;
+function supportsSpeech() {
+  return "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+}
+if (supportsSpeech()) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = "fr-FR";
+  recognition.interimResults = false;
+  recognition.onresult = (ev) => {
+    const text = ev.results[0][0].transcript;
+    send(text);
+  };
+  recognition.onend = () => {
+    talkBtn.classList.remove("listening");
+    talkBtn.setAttribute("aria-pressed", "false");
+    talkBtn.textContent = "🎤 Parler";
+  };
+  recognition.onerror = () => {
+    addLine("assistant", "Assistant > Le micro n'est pas disponible. Tapez votre message dans le champ texte.");
+  };
+  talkBtn.addEventListener("click", () => {
+    if (talkBtn.classList.contains("listening")) {
+      recognition.stop();
+      return;
+    }
+    try {
+      recognition.start();
+      talkBtn.classList.add("listening");
+      talkBtn.setAttribute("aria-pressed", "true");
+      talkBtn.textContent = "⏹ Arrêter";
+    } catch (e) {
+      addLine("assistant", "Assistant > Le micro n'est pas disponible. Tapez votre message dans le champ texte.");
+    }
+  });
+} else {
+  talkBtn.disabled = true;
+  talkBtn.title = "Reconnaissance vocale non disponible dans ce navigateur : utilisez le champ texte.";
+}
+
+addLine("assistant", "Assistant > Bonjour ! Dites ou écrivez ce que vous voulez faire, par exemple : « Remplis le formulaire avec mes documents et envoie-le par email ». Tapez « aide » pour la liste des commandes.");
+</script>
+</body>
+</html>
