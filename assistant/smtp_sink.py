@@ -39,16 +39,44 @@ class MailSink:
 # --------------------------------------------------------------------- web UI
 _PAGE = """<!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8">
-<title>Boîte de test locale (démo)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boîte de test locale — démo</title>
 <style>
-body{{font-family:sans-serif;margin:2em;max-width:60em}}
-h1{{font-size:1.3em}}
-table{{border-collapse:collapse}} td,th{{border:1px solid #ccc;padding:.3em .8em;text-align:left}}
-.att{{margin-left:1em}}
+  :root { --bg:#0E1116; --surface:#161B22; --border:#2A3340; --fg:#F5F7FA; --muted:#A9B1BE; --accent:#8FB3FF; --accent-ink:#0E1116; --ok:#3ED089; --bad:#FF7A7A; --focus:#F9F871; --radius:14px; --font:"DejaVu Sans","Noto Sans","Segoe UI",system-ui,sans-serif; }
+  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.55;padding:1.5rem 1rem;}
+  .wrap{max-width:64rem;margin:0 auto;display:flex;flex-direction:column;gap:1.2rem;}
+  .top{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;}
+  .mark{width:2.2rem;height:2.2rem;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ffffff22);display:grid;place-items:center;font-weight:900;color:var(--accent-ink);}
+  h1{margin:0;font-size:1.3rem;font-weight:800;flex:1 1 12rem;}
+  .badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:999px;border:2px solid var(--ok);color:var(--ok);font-size:.85rem;font-weight:700;}
+  .card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:1.1rem;}
+  table{width:100%;border-collapse:separate;border-spacing:0 6px;}
+  th{color:var(--muted);font-size:.85rem;text-align:left;padding:.4rem .7rem;font-weight:700;}
+  td{background:var(--bg);padding:.7rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  td:first-child{border-left:1px solid var(--border);border-radius:8px 0 0 8px;}
+  td:last-child{border-right:1px solid var(--border);border-radius:0 8px 8px 0;}
+  tr:hover td{background:#1a2029;}
+  a{color:var(--accent);text-decoration:none;font-weight:700;}
+  a:hover{text-decoration:underline;}
+  .empty{color:var(--muted);text-align:center;padding:2rem 0;}
+  .msg-title{margin:0 0 1rem 0;font-size:1.25rem;font-weight:800;}
+  .kv{color:var(--muted);font-size:.9rem;margin:.25rem 0;}
+  .kv b{color:var(--fg);}
+  pre{background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:1rem;white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto;}
+  .attach{list-style:none;padding:0;margin:.5rem 0 0;}
+  .attach li{padding:.6rem .8rem;border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;background:var(--bg);}
+  .attach a{display:inline-flex;align-items:center;gap:.5rem;}
+  .back{display:inline-block;margin-top:1rem;font-size:.9rem;}
+  button:focus-visible,a:focus-visible{outline:4px solid var(--focus);outline-offset:3px;}
 </style></head><body>
-<h1>Boîte de test locale — démo (aucun vrai email n'est envoyé)</h1>
+<div class="wrap">
+  <div class="top">
+    <div class="mark">M</div>
+    <h1>Boîte de test locale — démo</h1>
+    <span class="badge">✅ Aucun vrai email envoyé</span>
+  </div>
 {body}
-</body></html>"""
+</div></body></html>"""
 
 
 def _esc(s: str) -> str:
@@ -70,33 +98,42 @@ def _index(out_dir: Path) -> str:
         except Exception:
             rows.append(f"<tr><td><a href='/view/{f.name}'>{f.name}</a></td><td colspan='3'>illisible</td></tr>")
     if not rows:
-        body = "<p>Aucun message pour le moment.</p>"
+        body = "<div class='card'><p class='empty'>Aucun message pour le moment. Envoyez un email depuis l'assistant pour le voir apparaître ici.</p></div>"
     else:
-        body = ("<table><tr><th>Fichier</th><th>Objet</th><th>Destinataire</th>"
-                "<th>Pièces jointes</th></tr>" + "".join(rows) + "</table>")
+        body = ("<div class='card'><table><tr><th>Fichier</th><th>Objet</th><th>Destinataire</th>"
+                "<th>Pièces jointes</th></tr>" + "".join(rows) + "</table></div>")
     return _PAGE.format(body=body)
 
 
 def _view(out_dir: Path, name: str) -> tuple[str, dict]:
     f = out_dir / Path(name).name  # no path traversal
     if not f.is_file():
-        return _PAGE.format(body="<p>Message introuvable.</p>"), {"status": 404}
+        return _PAGE.format(body="<div class='card'><p class='empty'>Message introuvable.</p><a class='back' href='/'>← retour à la liste</a></div>"), {"status": 404}
     msg = email.message_from_bytes(f.read_bytes(), policy=policy.default)
-    lines = [
-        f"<h1>{_esc(str(msg.get('Subject', '(sans objet)')))}</h1>",
-        f"<p><b>De :</b> {_esc(str(msg.get('From', '')))}<br>"
-        f"<b>À :</b> {_esc(str(msg.get('To', '')))}</p>",
-        "<hr><pre>" + _esc(msg.get_body(preferencelist=("plain",)).get_content()
-                           if msg.get_body(preferencelist=("plain",)) else "") + "</pre>",
-        "<h2>Pièces jointes</h2><ul>",
-    ]
+    body_text = ""
+    b = msg.get_body(preferencelist=("plain",))
+    if b:
+        body_text = b.get_content()
+    att_html = ""
     for i, part in enumerate(msg.iter_attachments()):
         fname = part.get_filename() or f"piece_{i}"
-        lines.append(
-            f"<li class='att'><a href='/attach/{f.name}/{i}'>{_esc(fname)}</a> "
-            f"({_esc(part.get_content_type())})</li>"
+        att_html += (
+            f"<li><a href='/attach/{f.name}/{i}'>⬇ {_esc(fname)}</a> "
+            f"<span style='color:var(--muted);font-size:.8rem'>({ _esc(part.get_content_type())})</span></li>"
         )
-    lines.append("</ul><p><a href='/'>← retour à la liste</a></p>")
+    if not att_html:
+        att_html = "<li style='color:var(--muted)'>Aucune pièce jointe.</li>"
+    lines = [
+        "<div class='card'>",
+        f"<h1 class='msg-title'>{_esc(str(msg.get('Subject', '(sans objet)')))}</h1>",
+        f"<p class='kv'><b>De :</b> {_esc(str(msg.get('From', '')))}</p>",
+        f"<p class='kv'><b>À :</b> {_esc(str(msg.get('To', '')))}</p>",
+        f"<pre>{_esc(body_text)}</pre>",
+        "<h2 style='font-size:1rem;margin:1rem 0 .4rem'>Pièces jointes</h2>",
+        f"<ul class='attach'>{att_html}</ul>",
+        "<a class='back' href='/'>← retour à la liste</a>",
+        "</div>",
+    ]
     return _PAGE.format(body="".join(lines)), {}
 
 

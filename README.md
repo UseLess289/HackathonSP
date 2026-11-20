@@ -8,6 +8,18 @@ locale. Aucune donnée personnelle ne quitte la machine.
 
 ## Lancer la démo
 
+**En une commande** (venv + dépendances + données fictives + boîte de test +
+assistant, le tout orchestré) :
+
+```bash
+./scripts/run_demo.sh            # assistant en mode clavier + boîte de test
+./scripts/run_demo.sh web        # interface web : http://127.0.0.1:8765
+./scripts/run_demo.sh script     # scénario chronométré 90 s (DEMO-017)
+./scripts/run_demo.sh test       # tests uniquement
+```
+
+Ou étape par étape :
+
 ```bash
 # 1. environnement virtuel + dépendances
 python3 -m venv .venv
@@ -71,6 +83,7 @@ assistant/
 ├── make_demo_data.py  # génération des documents fictifs filigranés
 └── models.py          # états, contrat JSON des actions, profils, données personnelles
 doc/                   # pitch, spec v0, tickets AN-* et DEMO-*
+scripts/run_demo.sh    # lance toute la démo en une commande (cli / web / script / test)
 tests/test_demo.py     # tests de bout en bout (scénario x3 + tickets Dev 1)
 ```
 
